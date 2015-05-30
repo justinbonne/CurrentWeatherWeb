@@ -9,7 +9,9 @@ $(document).ready(function(){
 			var longitude = position.coords.longitude;
 			var latitude = position.coords.latitude;
 			currentForecast = new Forecast(longitude, latitude);
-			currentForecast.getCurrentForecast();
+			currentForecast.getCurrentForecast(function(){
+				currentForecast.displayWeather();
+			});
 		});
 	}
 });

@@ -30,3 +30,12 @@ a {
 #loadingModal div p {
   font-size: 2em;
 }
+.weather {
+  text-align: center;
+}
+.title.major {
+  font-size: 5em;
+}
+.subtitle.major {
+  font-size: 2em;
+}
