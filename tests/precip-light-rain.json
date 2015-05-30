@@ -10,7 +10,7 @@
         "ozone": 322.99,
         "precipIntensity": 0.006,
         "precipProbability": 50,
-		"preciptype": "rain",
+		"precipType": "rain",
         "pressure": 1013.48,
         "summary": "Rain",
         "temperature": 10.75,
