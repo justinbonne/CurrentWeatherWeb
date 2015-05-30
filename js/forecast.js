@@ -52,6 +52,37 @@ var Forecast = function (longitude, latitude){
 		
 		//temperature
 		$(".weather .temperature span").text(Math.ceil(this.weather.currently.apparentTemperature));
+		
+		//wind speed/direction
+		var closestWind = Math.round(this.weather.currently.windBearing/15)*15;
+		$(".weather .windSpeed span").text(Math.ceil(this.weather.currently.windSpeed));		
+		$(".weather .windBearing i").attr("class", "wi wi-wind-default _"+closestWind+"-deg");
+		
+		//preciption percentage/type
+		var precipIntensity = this.weather.currently.precipIntensity;
+		var precipQuantifier = "";
+		if(precipIntensity > 0 && precipIntensity <= 0.005){
+			precipQuantifier = "very light";
+		}
+		else if(precipIntensity > 0.005 && precipIntensity <= 0.043){
+			precipQuantifier = "light";
+		}
+		else if(precipIntensity > 0.043 && precipIntensity <= 0.254){
+			precipQuantifier = "moderate";
+		}
+		else if(precipIntensity > 0.254){
+			precipQuantifier = "heavy";
+		}
+		$(".weather .precipProbability span").text(Math.ceil(this.weather.currently.precipProbability));
+		if(this.weather.currently.precipProbability > 0 && this.weather.currently.precipType){
+			$(".weather .precipIntensity span").text(precipQuantifier+" "+this.weather.currently.precipType);
+		}
+		else{
+			$(".weather .precipIntensity span").text("");
+		}
+
+		//humidity
+		$(".weather .humidity span").text(this.weather.currently.humidity*100);
 	};
 	this.icons = {
 		"clear-day": "wi-day-sunny",
