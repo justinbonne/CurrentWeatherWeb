@@ -1,0 +1,14 @@
+@import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,300,400,600,700);
+body {
+  font-weight: 300;
+}
+header h1 {
+  text-align: center;
+}
+main {
+  width: 100%;
+  max-width: 650px;
+}
+a {
+  text-decoration: underline;
+}
