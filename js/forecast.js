@@ -9,12 +9,16 @@ var Forecast = function (longitude, latitude){
 	this.weather = {};
 	this.getCurrentForecast = function(){
 		var that = this;
+		that.loadingModal(true);
 		$.ajax({
 			"url": this.baseUrl+this.apiKey+"/"+this.latitude+","+this.longitude+"?"+$.param(this.options),
 			"dataType": "jsonp",
 			"success": function(data){
 				console.log(data);
 				that.weather = data;
+			},
+			"complete": function(){
+				that.loadingModal(false);
 			}
 		});
 	};
@@ -28,5 +32,16 @@ var Forecast = function (longitude, latitude){
 				that.weather = data;
 			}
 		});
+	};
+	this.loadingModal = function(toggle){
+		if(toggle === true){
+			$("#loadingModal").modal({
+				"backdrop": "static",
+				"keyboard": false
+			});
+		}
+		else{
+			$("#loadingModal").modal("hide");
+		}
 	};
 }
