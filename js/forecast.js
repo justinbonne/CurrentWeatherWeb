@@ -1,90 +1,113 @@
-var Forecast = function (longitude, latitude){
-	this.baseUrl = "https://api.forecast.io/forecast/";
-	this.apiKey = "9809553ac289203e5f21597f0278a007";
-	this.longitude = longitude;
-	this.latitude = latitude;
-	this.options = {
-		"units":"ca"
-	};
-	this.weather = {};
-	this.getCurrentForecast = function(callback){
-		var that = this;
-		that.loadingModal(true);
-		$.ajax({
-			"url": this.baseUrl+this.apiKey+"/"+this.latitude+","+this.longitude+"?"+$.param(this.options),
-			"dataType": "jsonp",
-			"success": function(data){
-				console.log(data);
-				that.weather = data;
-				callback();
-			},
-			"complete": function(){
-				that.loadingModal(false);
-			}
-		});
-	};
-	this.loadTest = function (testName){
-		var that = this;
-		$.ajax({
-			"url": "/tests/"+testName+".json",
-			"dataType": "json",
-			"success": function(data){
-				console.log(data);
-				that.weather = data;
-			}
-		});
-	};
-	this.loadingModal = function(toggle){
-		if(toggle === true){
-			$("#loadingModal").modal({
-				"backdrop": "static",
-				"keyboard": false
-			});
+/*
+	Forecast Protoype
+		- Handles communication with forcast.io api
+		  https://developer.forecast.io/
+		  Stores repsonse from forecast for retrieval
+		- Utility methods to convert response data to weather icons
+		  http://erikflowers.github.io/weather-icons/
+	
+	Properties:
+		baseUrl: forecase io api url
+		apiKey: api key that allows access to forecast.io
+		weather: object of response data
+		longitude: longitude sent to forecast.io
+		latitude: latitude sent to forecast.io
+		options: options that are converted to query parameters 
+			and sent in forecast.io request
+	API:
+	Forecast (setup)
+		- constructor that takes setup object and sets properties
+	Forecast.prototype.loading(toggle)
+		- overridable prototype method
+		- toggle on when ajax starts
+		- toggle off when ajax/callback are complete
+	Forecast.prototype.render()
+		- overridable prototype method
+		- should use objects data to display
+	Forecast.prototype.getCurrentForecast(callback)
+		- makes ajax call to forecast
+		- calls optional callback when complete
+	Forecast.prototype.loadTest(testname)
+		- loads object with data from json file /tests
+		- accepts name of the json file (no extension)
+	Forecast.qualifyPrecip(intensity)
+		- namespace method
+		- converts a cm/h decimal to a quality of rain
+		- can be very light, light, moderate, heavy
+	Forecast.forecastIconToWeatherIcon(icon)
+		- namespace method
+		- coverts icon name from forecast to weather icons
+		- http://erikflowers.github.io/weather-icons/
+	Forecast.windBearingToWeatherIcon(bearing)
+		- namespace method
+		- coverts decimal bearing to closest direction that has a weather icon
+		- http://erikflowers.github.io/weather-icons/
+ */
+var Forecast = function (setup){
+	this.apiKey = setup.apiKey;
+	if(setup.longitude)this.longitude = setup.longitude;
+	if(setup.latitude)this.latitude = setup.latitude;
+	if(setup.render)this.render = setup.render;
+	if(setup.loading)this.loading = setup.loading;
+	if(setup.options) this.options = setup.options;
+}
+Forecast.prototype.baseUrl = "https://api.forecast.io/forecast/";
+Forecast.prototype.apiKey = "";
+//store response here
+Forecast.prototype.weather = {};
+Forecast.prototype.longitude = 0.0;
+Forecast.prototype.latitude = 0.0;
+//default to return metric units
+Forecast.prototype.options = {
+	"units":"ca"
+};
+Forecast.prototype.loading = function(toggle){};
+Forecast.prototype.render = function(){};
+Forecast.prototype.getCurrentForecast = function(callback){
+	var that = this;
+	that.loading(true);
+	$.ajax({
+		"url": this.baseUrl+this.apiKey+"/"+this.latitude+","+this.longitude+"?"+$.param(this.options),
+		"dataType": "jsonp",
+		"success": function(data){
+			console.log(data);
+			that.weather = data;
+			if(callback)callback();
+		},
+		"complete": function(){
+			that.loading(false);
 		}
-		else{
-			$("#loadingModal").modal("hide");
+	});
+};
+Forecast.prototype.loadTest = function (testName){
+	var that = this;
+	$.ajax({
+		"url": "/tests/"+testName+".json",
+		"dataType": "json",
+		"success": function(data){
+			console.log(data);
+			that.weather = data;
 		}
-	};
-	this.displayWeather = function(){
-		//conditions
-		$(".weather .icon i").attr("class", "wi "+this.icons[this.weather.currently.icon]).text("");
-		$(".weather .summary").text(this.weather.currently.summary);
-		
-		//temperature
-		$(".weather .temperature span").text(Math.ceil(this.weather.currently.apparentTemperature));
-		
-		//wind speed/direction
-		var closestWind = Math.round(this.weather.currently.windBearing/15)*15;
-		$(".weather .windSpeed span").text(Math.ceil(this.weather.currently.windSpeed));		
-		$(".weather .windBearing i").attr("class", "wi wi-wind-default _"+closestWind+"-deg");
-		
-		//preciption percentage/type
-		var precipIntensity = this.weather.currently.precipIntensity;
-		var precipQuantifier = "";
-		if(precipIntensity > 0 && precipIntensity <= 0.005){
-			precipQuantifier = "very light";
-		}
-		else if(precipIntensity > 0.005 && precipIntensity <= 0.043){
-			precipQuantifier = "light";
-		}
-		else if(precipIntensity > 0.043 && precipIntensity <= 0.254){
-			precipQuantifier = "moderate";
-		}
-		else if(precipIntensity > 0.254){
-			precipQuantifier = "heavy";
-		}
-		$(".weather .precipProbability span").text(Math.ceil(this.weather.currently.precipProbability));
-		if(this.weather.currently.precipProbability > 0 && this.weather.currently.precipType){
-			$(".weather .precipIntensity span").text(precipQuantifier+" "+this.weather.currently.precipType);
-		}
-		else{
-			$(".weather .precipIntensity span").text("");
-		}
-
-		//humidity
-		$(".weather .humidity span").text(this.weather.currently.humidity*100);
-	};
-	this.icons = {
+	});
+};
+Forecast.qualifyPrecip = function(intensity){
+	var quality = "";
+	if(intensity > 0 && intensity <= 0.005){
+		quality = "very light";
+	}
+	else if(intensity > 0.005 && intensity <= 0.043){
+		quality = "light";
+	}
+	else if(intensity > 0.043 && intensity <= 0.254){
+		quality = "moderate";
+	}
+	else if(intensity > 0.254){
+		quality = "heavy";
+	}
+	return quality;
+};
+Forecast.forecastIconToWeatherIcon = function(icon){
+	var icons = {
 		"clear-day": "wi-day-sunny",
 		"clear-night": "wi-night-clear",
 		"rain": "wi-rain",
@@ -95,5 +118,10 @@ var Forecast = function (longitude, latitude){
 		"cloudy": "wi-cloudy",
 		"partly-cloudy-day": "wi-day-cloudy",
 		"partly-cloudy-night": "wi-night-alt-cloudy"
-	};
-}
+	}
+	return "wi "+icons[icon] || "";
+};
+Forecast.windBearingToWeatherIcon = function(bearing){
+	var closestWind = Math.round(bearing/15)*15;
+	return "wi wi-wind-default _"+closestWind+"-deg";
+};
