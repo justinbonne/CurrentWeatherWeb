@@ -17,6 +17,40 @@ I've made a reusable forecast prototype (forecast.js) that handles all the commu
 and data storage for the [forcast.io](https://developer.forecast.io/) api. It
 also includes utility methods to convert returned data into weather icon classes
 that can be used by the GUI.
+
+#Testing
+You can use the javascript console to load sample data from json from the tests
+folder. The current tests are for various icons, preciption types and wind
+directions.
+
+Example:
+
+```javascript
+//pass the file name with no extension
+currentForecast.loadTest("icon-clear-day"); 
+//call render after json ajax is complete
+currentForecast.render();
+```
+
+Available Tests:
+
+* icon-clear-day.json
+* icon-clear-night.json
+* icon-cloudy.json
+* icon-fog.json
+* icon-partly-cloudy-day.json
+* icon-partly-cloudy-night.json
+* icon-rain.json
+* icon-sleet.json
+* icon-snow.json
+* icon-wind.json
+* precip-heavy-rain.json
+* precip-light-rain.json
+* precip-moderate-rain.json
+* precip-very-light-rain.json
+* wind-10.json
+* wind-49.json
+* wind-175.json
  
 ##Libraries
 * [Bootstrap](http://getbootstrap.com)
